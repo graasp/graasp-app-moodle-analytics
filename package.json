@@ -1,12 +1,14 @@
 {
   "name": "graasp-app-starter-react",
-  "version": "0.6.0",
+  "version": "0.1.0",
   "private": true,
   "author": "EPFL",
   "contributors": [
     "Juan Carlos Farah",
     "Hassan Abdul Ghaffar",
-    "Mashkour Abdel Aziz"
+    "Mashkour Abdel Aziz",
+    "Roland Salloum",
+    "Hady Khairallah"
   ],
   "homepage": ".",
   "license": "MIT",
