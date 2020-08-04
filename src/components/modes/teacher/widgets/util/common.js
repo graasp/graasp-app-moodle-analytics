@@ -120,6 +120,7 @@ export const changeDateFormatForArray = (arr) => {
   });
   return temp;
 };
+
 export const nbOfTicks = (
   arrayOfTickValues,
   arrayOfBreakpoints,
@@ -127,8 +128,8 @@ export const nbOfTicks = (
 ) => {
   let tick = 0;
 
-  for (let i = arrayOfBreakpoints.length; i >= 0; i -= 1) {
-    if (windowsSize <= arrayOfBreakpoints[i]) {
+  for (let i = 0; i < arrayOfBreakpoints.length; i += 1) {
+    if (windowsSize >= arrayOfBreakpoints[i]) {
       tick = arrayOfTickValues[i];
     }
   }
@@ -137,10 +138,9 @@ export const nbOfTicks = (
 };
 
 function isActionInRange(data, timecreated) {
-  const correspondingObject = data.find(
+  return data.find(
     (obj) => obj.date === new Date(timecreated).toLocaleDateString(),
   );
-  return correspondingObject;
 }
 
 export const fillDataForBarChart = (actions, dataFormat) => {

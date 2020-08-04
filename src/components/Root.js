@@ -71,7 +71,7 @@ const Root = ({ classes }) => {
     window.addEventListener('resize', updateSize);
     updateSize();
     return () => window.removeEventListener('resize', updateSize);
-  }, []);
+  });
 
   return (
     <div className={classes.root}>

@@ -9,9 +9,12 @@ import PropTypes from 'prop-types';
 import Loader from '../../../../common/Loader';
 
 const Calendar = ({ date }) => {
+  const d = new Date(date);
+
   const modifiers = {
-    creationDay: new Date(date),
+    creationDay: d,
   };
+
   if (date) {
     return (
       <div>
@@ -25,7 +28,7 @@ const Calendar = ({ date }) => {
           `}
           </style>
         </Helmet>
-        <DayPicker numberOfMonths={4} fromMonth={date} modifiers={modifiers} />
+        <DayPicker numberOfMonths={4} from={d} modifiers={modifiers} />
       </div>
     );
   }

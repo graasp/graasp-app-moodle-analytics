@@ -8,9 +8,9 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import './TeacherView.css';
 import { getUsers } from '../../../actions';
-import CourseDate from './widgets/CourseDate';
+// import CourseDate from './widgets/CourseDate';
 import ActionBarChart from './widgets/ActionBarChart';
-import ActionBarChartPerTarget from './widgets/ActionBarChartPerTarget';
+// import ActionBarChartPerTarget from './widgets/ActionBarChartPerTarget';
 
 export class TeacherView extends PureComponent {
   static propTypes = {
@@ -20,6 +20,7 @@ export class TeacherView extends PureComponent {
       paper: PropTypes.string,
       title: PropTypes.string,
     }).isRequired,
+    appInstanceResources: PropTypes.arrayOf(PropTypes.object).isRequired,
   };
 
   static styles = (theme) => ({
@@ -47,36 +48,47 @@ export class TeacherView extends PureComponent {
   });
 
   render() {
-    const { classes } = this.props;
+    const { classes, appInstanceResources } = this.props;
+    if (appInstanceResources.length > 0) {
+      return (
+        <div className={classes.main}>
+          {/* Add events and announcements to the calendar */}
+          {/* <Grid> */}
+          {/*  <Paper className={classes.paper}> */}
+          {/*    <Typography className={classes.title} gutterBottom> */}
+          {/*      Weeks */}
+          {/*    </Typography> */}
+          {/*    <CourseDate /> */}
+          {/*  </Paper> */}
+          {/* </Grid> */}
+          <Grid container>
+            <Grid sm={6}>
+              <Paper className={classes.paper}>
+                <Typography className={classes.title} gutterBottom>
+                  Actions Per Day
+                </Typography>
+                <ActionBarChart />
+              </Paper>
+            </Grid>
+            {/* Choose the right target and change their names to significant values */}
+            {/* <Grid sm={6}> */}
+            {/*  <Paper className={classes.paper}> */}
+            {/*    <Typography className={classes.title} gutterBottom> */}
+            {/*      Actions Per Target */}
+            {/*    </Typography> */}
+            {/*    <ActionBarChartPerTarget /> */}
+            {/*  </Paper> */}
+            {/* </Grid> */}
+          </Grid>
+        </div>
+      );
+    }
     return (
-      <div className={classes.main}>
-        <Grid>
-          <Paper className={classes.paper}>
-            <Typography className={classes.title} gutterBottom>
-              Weeks
-            </Typography>
-            <CourseDate />
-          </Paper>
-        </Grid>
-        <Grid container>
-          <Grid sm={6}>
-            <Paper className={classes.paper}>
-              <Typography className={classes.title} gutterBottom>
-                Actions Per Day
-              </Typography>
-              <ActionBarChart />
-            </Paper>
-          </Grid>
-          <Grid sm={6}>
-            <Paper className={classes.paper}>
-              <Typography className={classes.title} gutterBottom>
-                Actions Per Target
-              </Typography>
-              <ActionBarChartPerTarget />
-            </Paper>
-          </Grid>
-        </Grid>
-      </div>
+      <Paper className={classes.paper}>
+        <Typography className={classes.title} gutterBottom>
+          Data is not available at the moment
+        </Typography>
+      </Paper>
     );
   }
 }
