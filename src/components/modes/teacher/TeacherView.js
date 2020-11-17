@@ -62,7 +62,7 @@ export class TeacherView extends PureComponent {
           {/*  </Paper> */}
           {/* </Grid> */}
           <Grid container>
-            <Grid sm={6}>
+            <Grid sm={12}>
               <Paper className={classes.paper}>
                 <Typography className={classes.title} gutterBottom>
                   Actions Per Day
