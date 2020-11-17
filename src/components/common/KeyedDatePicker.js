@@ -7,6 +7,9 @@ import TextField from '@material-ui/core/TextField';
 import Popover from '@material-ui/core/Popover';
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
+import UndoIcon from '@material-ui/icons/Undo';
+import RedoIcon from '@material-ui/icons/Redo';
+import IconButton from '@material-ui/core/IconButton';
 import Divider from '@material-ui/core/Divider';
 import moment from 'moment';
 import updateDateById from '../../actions/chartDataByID';
@@ -106,6 +109,24 @@ const KeyedDatePicker = ({ id, data, chartDataById }) => {
     setModifiers({ start: today, end: today });
     setSelectedDays([today, { from: today, to: today }]);
     dispatch(updateDateById(today, today, id));
+    handleClose();
+  };
+
+  const prevWeek = () => {
+    const newFrom = moment(from).subtract(7, 'days').toDate();
+    const newTo = moment(to).subtract(7, 'days').toDate();
+    setFrom(newFrom);
+    setTo(newTo);
+    dispatch(updateDateById(newFrom, newTo, id));
+    handleClose();
+  };
+
+  const nextWeek = () => {
+    const newFrom = moment(from).add(7, 'days').toDate();
+    const newTo = moment(to).add(7, 'days').toDate();
+    setFrom(newFrom);
+    setTo(newTo);
+    dispatch(updateDateById(newFrom, newTo, id));
     handleClose();
   };
 
@@ -234,7 +255,16 @@ const KeyedDatePicker = ({ id, data, chartDataById }) => {
                   p={1}
                   mt={2}
                   justifyContent="center"
-                />
+                  alignItems="center"
+                >
+                  <IconButton aria-label="weekBefore" onClick={prevWeek}>
+                    <UndoIcon />
+                  </IconButton>
+                  Weeks
+                  <IconButton aria-label="weekAfter" onClick={nextWeek}>
+                    <RedoIcon />
+                  </IconButton>
+                </Box>
               </Box>
             </Box>
             <Box p={1} flexGrow={1}>
