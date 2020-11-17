@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, connect } from 'react-redux';
 import Helmet from 'react-helmet';
 import PropTypes from 'prop-types';
 import DayPicker, { DateUtils } from 'react-day-picker';
@@ -7,21 +7,25 @@ import TextField from '@material-ui/core/TextField';
 import Popover from '@material-ui/core/Popover';
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
-import UndoIcon from '@material-ui/icons/Undo';
-import RedoIcon from '@material-ui/icons/Redo';
 import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
 import moment from 'moment';
 import updateDateById from '../../actions/chartDataByID';
 import 'react-day-picker/lib/style.css';
+import {
+  combineContents,
+  fromDate,
+  toDate,
+} from '../modes/teacher/widgets/util/common';
+import { DATE_FORMAT_SHORT_YEAR } from '../../config/settings';
 
-const flag = [];
+const KeyedDatePicker = ({ id, data, chartDataById }) => {
+  const dispatch = useDispatch();
+  const initialToday = new Date();
 
-const KeyedDatePicker = ({ id, initialValue }) => {
-  const [from, setFrom] = useState(initialValue.from);
-  const [fromPrev, setFromPrev] = useState(initialValue.from);
-  const [to, setTo] = useState(initialValue.to);
-  const [enteredTo, setEnteredTo] = useState(initialValue.to);
+  const [from, setFrom] = useState(initialToday);
+  const [fromPrev, setFromPrev] = useState(initialToday);
+  const [to, setTo] = useState(initialToday);
+  const [enteredTo, setEnteredTo] = useState(initialToday);
   const [modifiers, setModifiers] = useState({ start: from, end: enteredTo });
   const [selectedDays, setSelectedDays] = useState([
     from,
@@ -31,17 +35,29 @@ const KeyedDatePicker = ({ id, initialValue }) => {
   const open = Boolean(anchorEl);
   const PopId = open ? 'simple-popover' : undefined;
 
-  const dispatch = useDispatch();
+  useEffect(() => {
+    // get date range from actions
+    const dateRange = combineContents(data)?.map((action) =>
+      moment(action.timecreated),
+    );
+    if (dateRange?.length) {
+      setFrom(moment.min(dateRange).toDate());
+      setTo(moment.max(dateRange).toDate());
+    }
+  }, [data]);
+
   useEffect(() => {
     if (from !== null) {
       setFromPrev(from);
     }
-  }, [from]);
-  if (!flag.includes(id)) {
-    flag.push(id);
 
-    dispatch(updateDateById(from, to, id));
-  }
+    // check on date change
+    const prevFrom = fromDate(chartDataById, id);
+    const prevTo = toDate(chartDataById, id);
+    if (from !== prevFrom || to !== prevTo) {
+      dispatch(updateDateById(from, to, id));
+    }
+  }, [from, to]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -137,42 +153,16 @@ const KeyedDatePicker = ({ id, initialValue }) => {
     }
   };
 
-  const prevWeek = () => {
-    if (from.getDate() === to.getDate()) {
-      const fromD = new Date(from);
-      fromD.setDate(fromD.getDate() - 7);
-      setFrom(fromD);
-      dispatch(updateDateById(fromD, to, id));
-    } else {
-      const fromD = new Date(from);
-      fromD.setDate(fromD.getDate() - 7);
-      const toD = new Date(fromD.getDate() + 7);
-      setFrom(fromD);
-      setTo(toD);
-      setEnteredTo(toD);
-      dispatch(updateDateById(fromD, toD, id));
-      handleClose();
-    }
-  };
-
-  const nextWeek = () => {
-    setFrom(from.getDate() + 7);
-    setTo(to.getDate() + 7);
-    setEnteredTo(to.getDate());
-    dispatch(updateDateById(from, to, id));
-    handleClose();
-  };
-
-  const toDate = () => {
+  const toDateString = () => {
     if (to !== null) {
-      return moment(new Date(to)).format('DD/MM/YY');
+      return moment(to).format(DATE_FORMAT_SHORT_YEAR);
     }
     return ' ';
   };
 
-  const fromDate = () => {
+  const fromDateString = () => {
     if (from !== null) {
-      return moment(new Date(from)).format('DD/MM/YY');
+      return moment(from).format(DATE_FORMAT_SHORT_YEAR);
     }
     return ' ';
   };
@@ -195,13 +185,13 @@ const KeyedDatePicker = ({ id, initialValue }) => {
         <TextField
           aria-describedby={PopId}
           label="From"
-          value={fromDate()}
+          value={fromDateString()}
           onClick={handleClick}
         />
         <TextField
           aria-describedby={PopId}
           label="To"
-          value={toDate()}
+          value={toDateString()}
           onClick={handleClick}
         />
       </Box>
@@ -244,15 +234,7 @@ const KeyedDatePicker = ({ id, initialValue }) => {
                   p={1}
                   mt={2}
                   justifyContent="center"
-                >
-                  <IconButton aria-label="weekBefore" onClick={prevWeek}>
-                    <UndoIcon />
-                  </IconButton>
-                  Weeks
-                  <IconButton aria-label="weekAfter" onClick={nextWeek}>
-                    <RedoIcon />
-                  </IconButton>
-                </Box>
+                />
               </Box>
             </Box>
             <Box p={1} flexGrow={1}>
@@ -312,7 +294,20 @@ const KeyedDatePicker = ({ id, initialValue }) => {
 
 KeyedDatePicker.propTypes = {
   id: PropTypes.string.isRequired,
-  initialValue: PropTypes.instanceOf(Object).isRequired,
+  data: PropTypes.arrayOf(PropTypes.shape({})),
+  chartDataById: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 
-export default KeyedDatePicker;
+KeyedDatePicker.defaultProps = {
+  data: null,
+};
+
+const mapStateToProps = ({
+  appInstanceResources: { content },
+  chartDataById,
+}) => ({
+  data: content,
+  chartDataById,
+});
+
+export default connect(mapStateToProps)(KeyedDatePicker);

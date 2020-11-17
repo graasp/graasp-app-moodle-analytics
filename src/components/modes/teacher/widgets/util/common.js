@@ -1,4 +1,6 @@
 import moment from 'moment';
+import _ from 'lodash';
+import { DATE_FORMAT_SHORT_YEAR } from '../../../../../config/settings';
 import getComponentById from '../../../../../reducers/chartDataById';
 
 export const DateOfCreation = (creationData) => {
@@ -46,13 +48,16 @@ export const toDate = (chartDataById, id) => {
 };
 
 export const buildDateRange = (from, to) => {
-  const dates = [];
-  const fromTemp = new Date(from);
-  const toTemp = new Date(to);
-  while (fromTemp <= toTemp) {
-    dates.push(fromTemp.toLocaleDateString());
-    fromTemp.setDate(fromTemp.getDate() + 1);
+  let fromTmp = moment(from);
+  const toTmp = moment(to);
+
+  let dates = [];
+  while (fromTmp.isSameOrBefore(toTmp)) {
+    dates.push(fromTmp);
+    fromTmp = moment(fromTmp).add(1, 'd');
   }
+
+  dates = Array.from(dates);
   return dates;
 };
 
@@ -99,7 +104,7 @@ export const createDataForBarChart = (key, value, property) => {
 };
 
 export const changeDateFormat = (date) => {
-  return moment(date).format('DD/MM');
+  return moment(date).format(DATE_FORMAT_SHORT_YEAR);
 };
 
 export const changeDateFormatForBarChart = (dataArray) => {
@@ -107,7 +112,7 @@ export const changeDateFormatForBarChart = (dataArray) => {
   updatedDataArray.forEach((e) => {
     const { date } = e;
     // for each object in the data array take the date and change its format
-    e.date = changeDateFormat(date);
+    e.date = date.format(DATE_FORMAT_SHORT_YEAR);
   });
   return updatedDataArray;
 };
@@ -138,9 +143,7 @@ export const nbOfTicks = (
 };
 
 function isActionInRange(data, timecreated) {
-  return data.find(
-    (obj) => obj.date === new Date(timecreated).toLocaleDateString(),
-  );
+  return data.find((obj) => obj.date.isSame(timecreated, 'day'));
 }
 
 export const fillDataForBarChart = (actions, dataFormat) => {
@@ -203,4 +206,53 @@ export const combineContents = (listOfContent) => {
     return updatedContentList;
   });
   return updatedContentList;
+};
+
+export const formatChunkDate = (group) =>
+  group.length > 1 ? `${group[0]} - ${group[group.length - 1]}` : group[0];
+
+// compute ideal nb of chunk from data
+export const getChunkNb = (data, maxChartNb) => {
+  return data.length > maxChartNb
+    ? Math.ceil(data.length / maxChartNb)
+    : data.length;
+};
+
+export const chunkArray = (data, maxChartNb) => {
+  const chunkNb = getChunkNb(data, maxChartNb);
+  let chunks = _.chunk(data, chunkNb);
+  if (chunks[0]?.length === data.length) {
+    chunks = chunks.flat();
+  }
+  return chunks;
+};
+
+// chunk dates to match chunk data
+export const formatDates = (dates, maxChartNb) => {
+  const newDates = dates.map((date) => date.format(DATE_FORMAT_SHORT_YEAR));
+  let tmp = chunkArray(newDates, maxChartNb);
+  if (Array.isArray(tmp[0])) {
+    tmp = tmp.map(formatChunkDate);
+  }
+  return tmp;
+};
+
+// chunk data in group to display less barcharts
+export const chunkData = (defaultValues, data, maxChartNb) => {
+  return chunkArray(data, maxChartNb).map((group) => {
+    if (Array.isArray(group)) {
+      const values = group.reduce((acc, d) => {
+        // increment keys for each value
+        Object.keys(d).forEach((k) => {
+          acc[k] = acc[k] ? acc[k] + d[k] : d[k];
+        });
+        return acc;
+      }, {});
+      // format date to from - to format
+      const date = formatChunkDate(group.map(({ date: d }) => d));
+      return { ...defaultValues, ...values, date };
+    }
+
+    return group;
+  });
 };
