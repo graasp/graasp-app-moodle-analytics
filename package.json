@@ -17,6 +17,7 @@
     "@material-ui/icons": "4.9.1",
     "@nivo/bar": "0.62.0",
     "@nivo/legends": "0.62.0",
+    "d3-scale-chromatic": "2.0.0",
     "dextrous": "0.2.7",
     "enzyme": "3.11.0",
     "enzyme-adapter-react-16": "1.15.2",
