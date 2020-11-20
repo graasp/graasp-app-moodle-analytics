@@ -11,6 +11,7 @@ import {
   nbOfTicks,
   changeDateFormatForBarChart,
   chunkData,
+  getUniqueVerbs,
 } from '../util';
 import { DATE, VERB_BAR_CHART_DAY_PICKER_ID_PER_TIME } from '../types';
 import {
@@ -19,33 +20,13 @@ import {
   VERB_BAR_CHART_MAX_CHART_NUMBER,
 } from '../../../../../config/settings';
 
-const colors = {
-  created: '#decaff',
-  assigned: '#BBAAFF',
-  viewed: '#988BFF',
-  started: '#756DF4',
-  shown: '#decaff',
-  ended: '#BBAAFF',
-  updated: '#988BFF',
-  uploaded: '#756DF4',
-};
-
 const xAxis = DATE;
 const yAxis = 'Occurrence';
 
-const allowedVerbs = [
-  'created',
-  'assigned',
-  'viewed',
-  'started',
-  'ended',
-  'updated',
-  'shown',
-  'uploaded',
-];
 const VerbBarChart = (content, from, to) => {
   const dateRange = buildDateRange(from, to);
   let data = combineContents(content);
+  const allowedVerbs = getUniqueVerbs(data);
   const formattedData = createDataForBarChart(dateRange, allowedVerbs, [DATE]);
   data = fillDataForBarChart(data, formattedData);
   data = changeDateFormatForBarChart(data);
@@ -64,8 +45,7 @@ const mapStateToProps = ({
       fromDate(chartDataById, VERB_BAR_CHART_DAY_PICKER_ID_PER_TIME),
       toDate(chartDataById, VERB_BAR_CHART_DAY_PICKER_ID_PER_TIME),
     ),
-    keys: allowedVerbs,
-    colors,
+    keys: getUniqueVerbs(combineContents(content)),
     indexBy: DATE,
     xAxis,
     yAxis,
